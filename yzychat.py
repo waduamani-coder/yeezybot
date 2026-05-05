@@ -1,47 +1,62 @@
 import pandas as pd
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 
-# Load your data into a dataFrame
+app = Flask(__name__)
+CORS(app)
+
+# Load CSV data
 df = pd.read_csv("clothing_data.csv")
-# print(df)
-
-print("Yzybot: Hello there, I am your yeezy clothing assistance bot. Ask me about any yeezy clothes shopping advice")
 
 
-while True:
-    #1.  Get the user input and store the same into a variable
-    user_text = input("\n You: ").lower()
+# Function to get chatbot response
+def get_bot_response(user_text):
+    user_text = user_text.lower()
 
-    # 2.Check if the users want to exit
-    if user_text == "quit":
-        print("Yzybot: Goodbye!  Nice to have been of service to you.")
-        break
+    # 👋 Goodbye handling
+    if user_text in ["quit", "bye", "goodbye"]:
+        return "Goodbye! Nice to have been of service to you."
 
-    # Create a variable that will store the details structured in the csv file
     found_answer = False
+    response = "Sorry, i don't know that one, Try asking for something else."
 
-    # come up with a loop that loops through the entire data frame created before.
+    # Loop through CSV
     for index, row in df.iterrows():
-        # clean up the keywords from the CSV row
-        keywords_list = str(row["Keyword"]).split(',')
 
-        # Below we check every keyword in that given row (Keywords)
+        keywords_list = str(row["Keyword"]).split(',')
 
         for word in keywords_list:
             clean_word = word.strip().lower()
 
-            # if the keyword is inside of the user's sentence
             if clean_word in user_text:
-                print("Yzybot:", row["Response"])
+                response = row["Response"]
                 found_answer = True
                 break
 
-            if found_answer:
-                break # Stop looking at other answers since we already found a match
+        if found_answer:
+            break
 
-            # 4.If we went through the entire/whole CSV file and never found any match of the keywords,
-            # we need to display a message to the user
-
-            if not found_answer:
-                print("Yzybot: Sorry, i don't know that one, Try asking for something else.")
+    return response
 
 
+# 🌐 Chat API endpoint
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.json
+    user_text = data.get("message", "").lower()
+
+    # 👋 Greeting handling
+    if user_text in ["hi", "hello", "hey"]:
+        return jsonify({
+            "reply": "Hello there 👋 I am your Yeezy clothing assistant bot. Ask me anything!"
+        })
+
+    reply = get_bot_response(user_text)
+
+    return jsonify({"reply": reply})
+
+
+# 🚀 Run server
+if __name__ == "__main__":
+    print("Yzybot API is running...")
+    app.run(debug=True)
