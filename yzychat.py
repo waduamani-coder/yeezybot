@@ -59,4 +59,4 @@ def chat():
 # 🚀 Run server
 if __name__ == "__main__":
     print("Yzybot API is running...")
-    app.run(debug=True)
+    app.run()
