@@ -8,6 +8,10 @@ CORS(app)
 # Load CSV data
 df = pd.read_csv("clothing_data.csv")
 
+@app.route("/", methods=["GET"])
+def home():
+    return "Backend running"
+
 
 # Function to get chatbot response
 def get_bot_response(user_text):
